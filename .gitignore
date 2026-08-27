@@ -1,0 +1,9 @@
+# Windows / Google Drive artifacts
+desktop.ini
+Thumbs.db
+.DS_Store
+
+# Secrets — never commit an instance URL, password or token
+.env
+*.env
+secrets.*
