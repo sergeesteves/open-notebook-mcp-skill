@@ -56,7 +56,7 @@ claude mcp add content-core -- uvx --from content-core content-core-mcp
 
 > If the entry point differs by version: `uvx --from content-core content-core mcp` (subcommand), or
 > install the MCP extra. The server reads the same variables as the library (`FIRECRAWL_API_KEY`,
-> `JINA_API_KEY`, `CRAWL4AI_API_URL`, `CCORE_URL_ENGINE`…).
+> `JINA_API_KEY`, `CRAWL4AI_API_URL`, `CRAWL4AI_API_TOKEN`, `CCORE_URL_ENGINE`…).
 
 ## Gotchas
 
@@ -66,6 +66,15 @@ claude mcp add content-core -- uvx --from content-core content-core-mcp
 - **⚠️ URL is the root, WITHOUT `/api`**: the MCP appends `/api/...` to every endpoint
   (`make_request("GET", "/api/notebooks")`). The base must be `http://host` — an extra `/api` yields
   `/api/api/notebooks` → **404**.
+- **⚠️ v1.15 — source creation is multipart-only**: on Open Notebook **v1.15**, `POST /api/sources`
+  accepts **`multipart/form-data` only**; a JSON body returns
+  `422 {"type":"missing","loc":["body","type"]}`. JSON clients must post to **`POST /api/sources/json`**
+  instead. Consequence: `open-notebook-mcp` (Epochal-dev) posts JSON to `/api/sources`, so **adding a
+  source is broken on v1.15** (list / search / get still work). Until the MCP is patched: add sources
+  from the Open Notebook UI, or call `/api/sources/json` directly.
+- **`notebook_id` vs `notebooks`**: on create payloads, `notebooks: [id]` is the recommended form
+  (multi-notebook). `notebook_id` still works (the API converts it to `notebooks: [id]`), but **never
+  send both at once**.
 - **Password**: a protected instance answers `401 Missing authorization header` when the password is
   absent → set `OPEN_NOTEBOOK_PASSWORD`. An instance without password protection needs no token.
 - **Non-interactive session**: an MCP can't be added on the fly — provide the command and let the
